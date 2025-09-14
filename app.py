@@ -7,7 +7,7 @@ from scipy.stats import pearsonr
 
 st.set_page_config(page_title="散布図と相関係数分析", layout="wide")
 
-st.title("散布図と相関係数分析")
+st.title("散布図と相関係数分析（pp.26-28）")
 st.caption("Created by Dit-Lab.(Daiki ITO)")
 st.caption("Supported by Tomoaki ATSUMI")
 
