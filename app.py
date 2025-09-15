@@ -5,9 +5,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 from scipy.stats import pearsonr
 
-st.set_page_config(page_title="散布図と相関係数分析", layout="wide")
+st.set_page_config(page_title="散布図と相関係数", layout="wide")
 
-st.title("散布図と相関係数分析（pp.26-28）")
+st.title("散布図と相関係数（pp.26-28）")
 st.caption("Created by Dit-Lab.(Daiki ITO)")
 st.caption("Supported by Tomoaki ATSUMI")
 
