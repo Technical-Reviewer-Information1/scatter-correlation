@@ -402,6 +402,12 @@
     $('myTools').appendChild(pr);
   }
 
+  /* 本文の問題 */
+  function drawBook() {
+    if (!document.getElementById('bookBox')) return;
+    window.Quiz.choice('bookBox', 'bookNote', [{"k": "ア", "q": "15歳未満人口と小学校数の散布図から読み取れることとして<strong>適当でない</strong>ものは。", "ch": ["小学校数が多い都道府県ほど、15歳未満人口も多い傾向にある", "小学校数が多い都道府県ほど、その小学校に在籍する児童数は必ず多い", "15歳未満の人口が多いほど、小学校数も多くなる傾向にある", "正の相関が見られるが、必ずしも因果関係があるとは限らない"], "a": 1, "why": "散布図から分かるのは<strong>2つの変量の関係</strong>だけ。「1校あたりの児童数」は、この散布図からは読み取れません。「必ず」という言い切りにも注意。"}, {"k": "イ", "q": "年間平均気温と梅の開花観測日の散布図から読み取れることとして<strong>適当でない</strong>ものは。", "ch": ["年間平均気温が高いほど、梅の開花観測日は早い傾向が見られる", "年間平均気温が18℃以上の地点では、梅の開花は2月中までに観測されている", "年間平均気温が24℃以上の地点では、梅の開花観測日は30日以内に収まっている", "梅の開花観測日は年間平均気温に関係なく、ほぼ一定の日数で観測されている"], "a": 3, "why": "散布図には<strong>右下がりの傾向（負の相関）</strong>がはっきり出ています。「関係なく一定」は読み取れません。"}, {"k": "ウ", "q": "「年間平均気温が第3四分位数より大きい」「開花観測日が第3四分位数より大きい」で分けたとき、最も多いのは。", "ch": ["気温が高めで、開花が遅めの地域", "気温が高めで、開花が遅めではない地域", "気温が高めではないが、開花が遅めの地域", "気温が高めではないが、開花が遅めではない地域"], "a": 3, "why": "第3四分位数より大きいのは<strong>全体の4分の1ずつ</strong>。負の相関があるので「気温が高め かつ 開花が遅め」はほとんどなく、逆に<strong>どちらも当てはまらない地域</strong>が最も多くなります。"}], "本文の答えは【ア】①　【イ】③　【ウ】③ です。");
+  }
+
   function init() {
     const box = $('playBox');
     box.addEventListener('mousedown', onDown);
@@ -434,6 +440,7 @@
     window.Terms.glossary($('glossBox'), ['相関係数', '共分散', '散布図', '正の相関', '負の相関', '外れ値', '相関関係', '因果関係']);
     shape('pos'); gallery(); drawOut(); startQuiz();
     refreshCols(grid.getData(), grid.getHeader());
+    drawBook();
     window.Terms.attach();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();

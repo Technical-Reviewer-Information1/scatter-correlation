@@ -9,6 +9,7 @@
   "xlsx.js",
   "datainput.js",
   "terms.js",
+  "quiz.js",
   "app.js"
  ],
  "use": {
