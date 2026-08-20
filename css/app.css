@@ -28,3 +28,10 @@
 #calcTable td, #calcTable th{white-space:nowrap}
 input[type=range]{width:100%; accent-color:var(--accent); height:34px}
 .why{font-size:.85rem; color:var(--ink-2); line-height:1.85}
+.sel{width:100%; font-family:inherit; font-size:.95rem; padding:9px 11px; min-height:42px;
+  border:1px solid var(--ink-3); border-radius:2px; background:var(--paper); color:var(--ink)}
+#myMatrix td{font-family:var(--mono); text-align:center}
+#myMatrix td:first-child, #myMatrix th{font-family:var(--font)}
+#myMatrix td.pos{color:var(--accent); font-weight:700}
+#myMatrix td.neg{color:var(--ng); font-weight:700}
+#myMatrix td.self{background:var(--paper-2); color:var(--ink-3)}

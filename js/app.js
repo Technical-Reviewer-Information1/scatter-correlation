@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const C = window.Chart, $ = id => document.getElementById(id);
+  const C = window.Chart, T = window.Tools, $ = id => document.getElementById(id);
   const NS = 'http://www.w3.org/2000/svg';
 
   /* ---------- 統計 ---------- */
@@ -321,6 +321,87 @@
     $('qScore').textContent = qScore; $('qNext').disabled = false;
   }
 
+
+  /* ---------- STEP6 自分のデータ ---------- */
+  let grid = null, gh = [];
+  function refreshCols(rows, hdr) {
+    gh = hdr;
+    const nums = grid.numericColumns();
+    [['mx', 0], ['my', 1]].forEach(([id, def]) => {
+      const sel = $(id), prev = sel.value;
+      sel.innerHTML = hdr.map((h, j) => '<option value="' + j + '"' + (nums.indexOf(j) < 0 ? ' disabled' : '') +
+        '>' + h + (nums.indexOf(j) < 0 ? '（数値でない列）' : '') + '</option>').join('');
+      if (prev !== '' && sel.querySelector('option[value="' + prev + '"]:not([disabled])')) sel.value = prev;
+      else if (nums.length) sel.value = nums[Math.min(def, nums.length - 1)];
+    });
+    calcMine();
+  }
+  function corrOf(a, b) {
+    const n = a.length;
+    if (n < 3) return NaN;
+    const ma = a.reduce((x, y) => x + y, 0) / n, mb = b.reduce((x, y) => x + y, 0) / n;
+    let sab = 0, saa = 0, sbb = 0;
+    for (let i = 0; i < n; i++) { sab += (a[i] - ma) * (b[i] - mb); saa += (a[i] - ma) ** 2; sbb += (b[i] - mb) ** 2; }
+    return (saa && sbb) ? sab / Math.sqrt(saa * sbb) : 0;
+  }
+  function calcMine() {
+    if (!grid) return;
+    const G = window.DataGrid;
+    const xj = +$('mx').value, yj = +$('my').value;
+    const rows = grid.getData();
+    const pairs = rows.map(r => [G.strNum(r[xj]), G.strNum(r[yj])]).filter(p => p[0] != null && p[1] != null);
+    const n = $('myNote');
+    if (pairs.length < 3) {
+      n.hidden = false; n.className = 'note ng';
+      n.textContent = '数値の組が3つ以上必要です。2つの数値の列をえらんでください。';
+      ['myStats', 'myChart', 'myMatrix', 'myTools'].forEach(i => $(i).innerHTML = '');
+      return;
+    }
+    const xs = pairs.map(p => p[0]), ys2 = pairs.map(p => p[1]);
+    const r = corrOf(xs, ys2);
+    const N = pairs.length;
+    const mx = xs.reduce((a, b) => a + b, 0) / N, my = ys2.reduce((a, b) => a + b, 0) / N;
+    let cov = 0; pairs.forEach(p => cov += (p[0] - mx) * (p[1] - my)); cov /= N;
+    $('myStats').innerHTML =
+      '<div class="metric"><div class="k">データ数</div><div class="v">' + N + '</div></div>' +
+      '<div class="metric"><div class="k">相関係数 r</div><div class="v">' + (r >= 0 ? '+' : '') + r.toFixed(3) + '</div></div>' +
+      '<div class="metric"><div class="k">共分散</div><div class="v">' + cov.toFixed(2) + '</div></div>' +
+      '<div class="metric"><div class="k">' + (gh[xj] || 'x') + ' の平均</div><div class="v">' + mx.toFixed(2) + '</div></div>' +
+      '<div class="metric"><div class="k">' + (gh[yj] || 'y') + ' の平均</div><div class="v">' + my.toFixed(2) + '</div></div>';
+    C.scatter($('myChart'), { W: 460, H: 380, points: pairs, regression: $('myLine').checked,
+      xLabel: gh[xj] || 'x', yLabel: gh[yj] || 'y' });
+    // 相関行列
+    const nums = grid.numericColumns();
+    if (nums.length >= 2) {
+      const cols = nums.map(j => ({ j, name: gh[j], v: rows.map(rr => G.strNum(rr[j])) }));
+      const valid = cols.filter(c => c.v.filter(v => v != null).length >= 3);
+      $('myMatrix').innerHTML = '<thead><tr><th></th>' + valid.map(c => '<th>' + c.name + '</th>').join('') +
+        '</tr></thead><tbody>' + valid.map(a => '<tr><td>' + a.name + '</td>' + valid.map(b => {
+          if (a.j === b.j) return '<td class="self">—</td>';
+          const pp = rows.map(rr => [G.strNum(rr[a.j]), G.strNum(rr[b.j])]).filter(p => p[0] != null && p[1] != null);
+          const rr2 = corrOf(pp.map(p => p[0]), pp.map(p => p[1]));
+          return '<td class="' + (rr2 > 0 ? 'pos' : 'neg') + '">' + (rr2 >= 0 ? '+' : '') + rr2.toFixed(2) + '</td>';
+        }).join('') + '</tr>').join('') + '</tbody>';
+    } else $('myMatrix').innerHTML = '<tbody><tr><td>数値の列が2つ以上必要です</td></tr></tbody>';
+    const ax = Math.abs(r);
+    n.hidden = false;
+    n.className = ax >= .7 ? 'note ok' : ax >= .4 ? 'note info' : 'note warn';
+    n.innerHTML = '「' + (gh[xj] || 'x') + '」と「' + (gh[yj] || 'y') + '」の相関係数は <strong>' +
+      (r >= 0 ? '+' : '') + r.toFixed(3) + '</strong>（' + word(r) + '）。' +
+      (ax < .2 ? '直線的な関係は弱いですが、<strong>曲がった関係が隠れていないか散布図を必ず確認</strong>してください。'
+               : '<strong>相関があっても因果関係があるとは限りません。</strong>かくれた第3の要因（交絡因子）がないか考えましょう。');
+    $('myTools').innerHTML = '';
+    $('myTools').appendChild(T.saveButton(() => $('myChart').querySelector('svg'), '散布図'));
+    const sh = document.createElement('button');
+    sh.className = 'btn sm ghost'; sh.textContent = 'このデータのURLを作る';
+    sh.addEventListener('click', () => T.share({ d: grid.getRaw(), h: grid.getHeader(), x: xj, y: yj }, sh));
+    $('myTools').appendChild(sh);
+    const pr = document.createElement('button');
+    pr.className = 'btn sm ghost'; pr.textContent = '印刷する';
+    pr.addEventListener('click', T.printPage);
+    $('myTools').appendChild(pr);
+  }
+
   function init() {
     const box = $('playBox');
     box.addEventListener('mousedown', onDown);
@@ -338,7 +419,22 @@
     $('outY').addEventListener('input', drawOut);
     $('qNext').addEventListener('click', () => { qi++; renderQ(); });
     $('qReset').addEventListener('click', startQuiz);
+    ['mx', 'my', 'myLine'].forEach(i => $(i).addEventListener('change', calcMine));
+    $('calcMine').addEventListener('click', calcMine);
+    const shared = T.readShared();
+    const initData = (shared && shared.d) ? shared.d : [
+      ['1番','2.0','42','6.5'],['2番','3.0','48','7.0'],['3番','3.5','55','6.8'],['4番','4.0','58','6.2'],
+      ['5番','4.5','61','6.0'],['6番','5.0','67','5.8'],['7番','5.5','66','6.1'],['8番','6.0','74','5.5'],
+      ['9番','6.5','78','5.2'],['10番','7.0','81','5.0'],['11番','7.5','84','4.8'],['12番','8.0','88','4.5']
+    ];
+    const initHeader = (shared && shared.h) ? shared.h : ['生徒', '学習時間(時間)', '点数(点)', '睡眠時間(時間)'];
+    grid = window.DataInput.create($('dataInput'), {
+      header: initHeader, data: initData, minRows: 3, onChange: refreshCols
+    });
+    window.Terms.glossary($('glossBox'), ['相関係数', '共分散', '散布図', '正の相関', '負の相関', '外れ値', '相関関係', '因果関係']);
     shape('pos'); gallery(); drawOut(); startQuiz();
+    refreshCols(grid.getData(), grid.getHeader());
+    window.Terms.attach();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
