@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>散布図と相関係数｜情報Ⅰ共通テスト対策問題集</title>
+<meta name="description" content="相関係数は「点の並び方」を1つの数字に押し込めたものです。点をつかんで動かしながら、数字と見た目の対応を体に入れましょう。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%2315181c%22/%3E%3Ctext x=%2216%22 y=%2222%22 font-size=%2218%22 font-family=%22monospace%22 fill=%22%23fff%22 text-anchor=%22middle%22%3E01%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="inner">
+    <span class="eyebrow">第 1 章　データの活用　1-7</span>
+    <h1>散布図と相関係数（pp.26-28）</h1>
+    <p class="lead">相関係数は「点の並び方」を1つの数字に押し込めたものです。点をつかんで動かしながら、数字と見た目の対応を体に入れましょう。</p>
+    <p class="credit">Created by Dit-Lab.(Daiki ITO)　/　Supported by Tomoaki ATSUMI</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="step" id="step1">
+    <h2><span class="no">STEP 1</span>点を動かして相関係数を変える</h2>
+    <p class="desc">白い場所を<strong>クリック（タップ）で点を追加</strong>、点を<strong>つかんで移動</strong>。相関係数 r がその場で変わります。</p>
+
+    <div class="grid c2">
+      <div>
+        <div id="playBox"></div>
+        <div class="btn-row" style="margin-top:10px">
+          <button class="btn sm" data-shape="pos">正の相関</button>
+          <button class="btn sm" data-shape="neg">負の相関</button>
+          <button class="btn sm" data-shape="none">無相関</button>
+          <button class="btn sm" data-shape="curve">曲がった関係</button>
+          <button class="btn sm ghost" id="clearPts">全部消す</button>
+          <button class="btn sm ghost" id="undoPt">1つ戻す</button>
+        </div>
+        <p class="why" style="margin-top:8px">点の数：<span class="mono" id="ptCount">0</span>　／　最大 40 点まで</p>
+      </div>
+
+      <div class="panel">
+        <h3>相関係数 r</h3>
+        <div class="rval" id="rVal">—</div>
+        <div class="rword" id="rWord"></div>
+        <div class="rmeter">
+          <div class="scale"><div class="needle" id="needle" style="left:50%"></div></div>
+          <div class="ticks"><span>-1</span><span>-0.5</span><span>0</span><span>+0.5</span><span>+1</span></div>
+        </div>
+        <div class="metrics" style="margin-top:16px">
+          <div class="metric"><div class="k">x の平均</div><div class="v" id="mMx">—</div></div>
+          <div class="metric"><div class="k">y の平均</div><div class="v" id="mMy">—</div></div>
+          <div class="metric"><div class="k">共分散</div><div class="v" id="mCov">—</div></div>
+        </div>
+        <div class="note" id="rNote" style="margin-top:14px"></div>
+        <div class="btn-row" style="margin-top:12px">
+          <label style="font-size:.85rem;display:flex;align-items:center;gap:6px">
+            <input type="checkbox" id="showLine" checked> 回帰直線を表示
+          </label>
+          <label style="font-size:.85rem;display:flex;align-items:center;gap:6px">
+            <input type="checkbox" id="showMean"> 平均の線を表示
+          </label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="step2">
+    <h2><span class="no">STEP 2</span>相関係数はこう計算されている</h2>
+    <p class="desc">式の意味は「<strong>x と y が同じ向きにずれているか</strong>」を数えることです。上で作った点で確かめましょう。</p>
+    <div class="panel">
+      <div class="tbl-scroll">
+        <table class="tbl" id="calcTable">
+          <thead><tr><th>#</th><th>x</th><th>y</th><th>x−x̄</th><th>y−ȳ</th><th>(x−x̄)(y−ȳ)</th><th>(x−x̄)²</th><th>(y−ȳ)²</th></tr></thead>
+          <tbody></tbody><tfoot></tfoot>
+        </table>
+      </div>
+      <div class="note info" style="margin-top:12px" id="formulaNote"></div>
+      <p class="why" style="margin-top:10px">
+        <strong>(x−x̄)(y−ȳ) が正の点</strong>は「両方とも平均より大きい」または「両方とも平均より小さい」点。
+        これが多いほど r は＋に、逆向きの点が多いほど −になります。
+      </p>
+    </div>
+  </section>
+
+  <section class="step" id="step3">
+    <h2><span class="no">STEP 3</span>r の値と見た目を結びつける</h2>
+    <p class="desc">代表的な散らばり方を並べました。数字と形の対応を覚えてください。</p>
+    <div class="gallery" id="gallery"></div>
+    <div class="note info" style="margin-top:14px">
+      おおよその目安：|r| が <span class="mono">0.7以上</span>＝強い相関、<span class="mono">0.4〜0.7</span>＝相関がある、
+      <span class="mono">0.2〜0.4</span>＝弱い相関、<span class="mono">0.2未満</span>＝ほとんど相関なし。
+      <strong>r は直線的な関係の強さしか測れません。</strong>
+    </div>
+  </section>
+
+  <section class="step" id="step4">
+    <h2><span class="no">STEP 4</span>外れ値1個の影響を見る</h2>
+    <p class="desc">きれいな正の相関に、たった1つ離れた点を加えます。スライダーでその点を動かしてください。</p>
+    <div class="panel">
+      <div class="grid c2">
+        <div>
+          <label class="fld" for="outX">外れ値の x：<span class="mono" id="outXv">50</span></label>
+          <input type="range" id="outX" min="0" max="100" step="1" value="50">
+          <label class="fld" style="margin-top:10px" for="outY">外れ値の y：<span class="mono" id="outYv">50</span></label>
+          <input type="range" id="outY" min="0" max="100" step="1" value="50">
+          <div class="metrics" style="margin-top:14px">
+            <div class="metric"><div class="k">外れ値なしの r</div><div class="v" id="rBase">—</div></div>
+            <div class="metric"><div class="k">外れ値ありの r</div><div class="v" id="rWith">—</div></div>
+          </div>
+        </div>
+        <div id="outChart"></div>
+      </div>
+      <div class="note" id="outNote" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <section class="step" id="step5">
+    <h2><span class="no">STEP 5</span>確認クイズ</h2>
+    <div class="panel">
+      <div class="qhead">
+        <span class="badge" id="qProgress">1 / 1</span>
+        <span class="badge">正解 <span class="score" id="qScore">0</span></span>
+      </div>
+      <div id="qFigure"></div>
+      <div class="card-q"><div class="q-scene" id="qText"></div></div>
+      <div class="choice4" id="qChoices"></div>
+      <div class="note" id="qFb" hidden style="margin-top:12px"></div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn primary" id="qNext" disabled>次の問題</button>
+        <button class="btn ghost" id="qReset">最初から</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="step">
+    <h2><span class="no">まとめ</span>相関係数の性質</h2>
+    <ul style="margin:0;padding-left:1.2em;color:var(--ink-2);font-size:.92rem;line-height:2.05">
+      <li>r は必ず <strong>−1 ≦ r ≦ 1</strong> の範囲に入ります。</li>
+      <li>r には<strong>単位がありません</strong>。cm を m に変えても r は変わりません。</li>
+      <li>r は<strong>直線的な関係</strong>の強さだけを測ります。曲がった関係は r ≒ 0 になることがあります。</li>
+      <li><strong>外れ値に弱い</strong>。1点で値が大きく動くので、必ず散布図も見ます。</li>
+      <li>相関があっても<strong>因果関係があるとは限りません</strong>（次の節で扱います）。</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  情報Ⅰ 共通テスト対策問題集（技術評論社）連動Webアプリ　/　Created by Dit-Lab.(Daiki ITO)　/　Supported by Tomoaki ATSUMI
+</footer>
+
+<script src="js/chart.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
