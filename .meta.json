@@ -4,9 +4,10 @@
  "pp": "pp.26-28",
  "lead": "相関係数は「点の並び方」を1つの数字に押し込めたものです。点をつかんで動かしながら、数字と見た目の対応を体に入れましょう。",
  "scripts": [
+  "tools.js",
   "chart.js",
-  "grid.js",
   "xlsx.js",
+  "grid.js",
   "datainput.js",
   "terms.js",
   "quiz.js",
